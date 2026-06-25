@@ -1,0 +1,41 @@
+{
+  "name": "novara-treasury",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local token swap and treasury application for Anvil.",
+  "scripts": {
+    "chain": "node scripts/chain.mjs",
+    "deploy": "node scripts/deploy.mjs",
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "node scripts/test.mjs"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.67.2",
+    "@postcss/postcss-initialize-plugin": "3.0.4",
+    "lucide-react": "^0.479.0",
+    "next": "^15.2.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.23.5",
+    "wagmi": "^2.14.12"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "^5.2.0",
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.21.0",
+    "eslint-config-next": "^15.2.2",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.2"
+  }
+}

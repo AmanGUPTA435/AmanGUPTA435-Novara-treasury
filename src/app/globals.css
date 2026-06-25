@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background-color: initial;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(198, 161, 91, 0.08), transparent 55%),
+    radial-gradient(900px 420px at 100% 0%, rgba(90, 122, 160, 0.08), transparent 50%),
+    #08090d;
+  color: #e8eaef;
+}
+
+.protocol-surface {
+  background-color: initial;
+  color: initial;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2e38 transparent;
+}
+
+@layer components {
+  .panel {
+    @apply min-w-0 rounded-2xl border border-novara-line/80 bg-novara-panel/90 shadow-panel;
+  }
+
+  .panel-pad {
+    @apply p-4 sm:p-5;
+  }
+
+  .label {
+    @apply text-[11px] font-medium uppercase tracking-[0.18em] text-novara-mist;
+  }
+
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-novara-gold text-zinc-950 hover:bg-novara-gold2;
+  }
+
+  .btn-secondary {
+    @apply btn border border-novara-line bg-novara-panel2 text-zinc-100 hover:border-novara-gold/50;
+  }
+}
