@@ -11,7 +11,6 @@ import {
 import {
   useAccount,
   useReadContract,
-  useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
 
@@ -91,19 +90,6 @@ function ProposalRow({
     },
   });
 
-    const {
-    data: canExecute,
-    refetch: refetchCanExecute,
-    } = useReadContract({
-    address: deployment.treasuryWithdrawal,
-    abi: treasuryWithdrawalAbi,
-    functionName: "canExecute",
-    args: [proposalId],
-    query: {
-        enabled: contractsReady(),
-    },
-    });
-
   if (!proposal) {
     return (
       <div className="rounded-xl border border-novara-line/70 bg-novara-panel2 px-4 py-4">
@@ -132,6 +118,11 @@ function ProposalRow({
     BigInt(Math.floor(Date.now() / 1000)) >= expiresAt;
 
   const pending = status === STATUS.Pending;
+
+  const executable =
+    pending &&
+    approvalCount >= requiredApprovals &&
+    !expiredByTime;
 
   async function refresh() {
     await Promise.all([refetchProposal(), refetchVote()]);
@@ -222,9 +213,8 @@ function ProposalRow({
             className="btn-primary"
             onClick={handleExecute}
             disabled={
-              isPending ||
-              !canExecute ||
-              expiredByTime
+                isPending ||
+                !executable
             }
           >
             Execute
