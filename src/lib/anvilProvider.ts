@@ -9,7 +9,7 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { ANVIL_PRIVATE_KEY, ANVIL_RPC_URL } from "@/lib/constants";
+import { ANVIL_ACCOUNTS, ANVIL_RPC_URL } from "@/lib/constants";
 import { anvilLocal } from "@/lib/chain";
 
 class MiniEmitter {
@@ -31,13 +31,20 @@ class MiniEmitter {
 }
 
 export function createAnvilProvider(): EIP1193Provider {
-  const account = privateKeyToAccount(ANVIL_PRIVATE_KEY);
   const emitter = new MiniEmitter();
+
   const publicClient = createPublicClient({
     chain: anvilLocal,
     transport: http(ANVIL_RPC_URL),
   });
-  const walletClient = createWalletClient({
+
+  let accountIndex = 0;
+
+  let account = privateKeyToAccount(
+    ANVIL_ACCOUNTS[accountIndex].privateKey,
+  );
+
+  let walletClient = createWalletClient({
     account,
     chain: anvilLocal,
     transport: http(ANVIL_RPC_URL),
@@ -46,6 +53,7 @@ export function createAnvilProvider(): EIP1193Provider {
   const provider = {
     on: emitter.on.bind(emitter),
     removeListener: emitter.removeListener.bind(emitter),
+
     async request(args: EIP1193Parameters) {
       const { method, params = [] } = args;
       const list = params as unknown[];
@@ -54,14 +62,18 @@ export function createAnvilProvider(): EIP1193Provider {
         case "eth_requestAccounts":
         case "eth_accounts":
           return [account.address];
+
         case "eth_chainId":
           return numberToHex(anvilLocal.id);
+
         case "net_version":
           return String(anvilLocal.id);
+
         case "personal_sign":
           return walletClient.signMessage({
             message: { raw: list[0] as Hex },
           });
+
         case "eth_sendTransaction": {
           const tx = list[0] as {
             to?: Hex;
@@ -70,6 +82,7 @@ export function createAnvilProvider(): EIP1193Provider {
             gas?: Hex;
             gasPrice?: Hex;
           };
+
           return walletClient.sendTransaction({
             to: tx.to,
             data: tx.data,
@@ -78,15 +91,52 @@ export function createAnvilProvider(): EIP1193Provider {
             gasPrice: tx.gasPrice ? BigInt(tx.gasPrice) : undefined,
           });
         }
+
+        case "anvil_switchAccount": {
+          const requestedIndex = Number(list[0]);
+
+          if (
+            !Number.isInteger(requestedIndex) ||
+            requestedIndex < 0 ||
+            requestedIndex >= ANVIL_ACCOUNTS.length
+          ) {
+            throw new Error("Invalid Anvil account index");
+          }
+
+          accountIndex = requestedIndex;
+
+          account = privateKeyToAccount(
+            ANVIL_ACCOUNTS[accountIndex].privateKey,
+          );
+
+          walletClient = createWalletClient({
+            account,
+            chain: anvilLocal,
+            transport: http(ANVIL_RPC_URL),
+          });
+
+          emitter.emit("accountsChanged", [account.address]);
+
+          return [account.address];
+        }
+
         case "wallet_switchEthereumChain": {
-          const requested = hexToNumber((list[0] as { chainId: Hex }).chainId);
+          const requested = hexToNumber(
+            (list[0] as { chainId: Hex }).chainId,
+          );
+
           if (requested !== anvilLocal.id) {
-            const error = new Error("Wrong network") as Error & { code: number };
+            const error = new Error("Wrong network") as Error & {
+              code: number;
+            };
+
             error.code = 4902;
             throw error;
           }
+
           return null;
         }
+
         default:
           return publicClient.request({
             method,
@@ -102,6 +152,9 @@ export function createAnvilProvider(): EIP1193Provider {
 let cached: EIP1193Provider | undefined;
 
 export function getAnvilProvider() {
-  if (!cached) cached = createAnvilProvider();
+  if (!cached) {
+    cached = createAnvilProvider();
+  }
+
   return cached;
 }
