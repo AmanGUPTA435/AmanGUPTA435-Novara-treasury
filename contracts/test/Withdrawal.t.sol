@@ -43,12 +43,11 @@ contract WithdrawalTest is Test {
         treasury.voteOnWithdrawalProposal(proposalId, false);
     }
 
-    function _getProposalStatus(uint256 proposalId)
-        internal
-        view
-        returns (TreasuryWithdrawalGovernance.ProposalStatus)
-    {
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+    function _getProposalStatus(
+        uint256 proposalId
+    ) internal view returns (TreasuryWithdrawalGovernance.ProposalStatus) {
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         return proposal.status;
     }
@@ -84,14 +83,18 @@ contract WithdrawalTest is Test {
 
         treasury.executeWithdrawalProposal(proposalId);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
-        assertEq(uint256(proposal.status), uint256(TreasuryWithdrawalGovernance.ProposalStatus.Pending));
+        assertEq(
+            uint256(proposal.status),
+            uint256(TreasuryWithdrawalGovernance.ProposalStatus.Pending)
+        );
 
         assertEq(address(treasury).balance, balanceBefore);
     }
 
-    function testConstructorSetsOwnersAndThresholds() public {
+    function testConstructorSetsOwnersAndThresholds() public view {
         assertTrue(treasury.isOwner(owner1));
         assertTrue(treasury.isOwner(owner2));
         assertTrue(treasury.isOwner(owner3));
@@ -113,7 +116,9 @@ contract WithdrawalTest is Test {
     function testConstructorRevertsWithNoOwners() public {
         address[] memory owners = new address[](0);
 
-        vm.expectRevert(TreasuryWithdrawalGovernance.InvalidApprovalThreshold.selector);
+        vm.expectRevert(
+            TreasuryWithdrawalGovernance.InvalidApprovalThreshold.selector
+        );
 
         new TreasuryWithdrawalGovernance(owners, 1);
     }
@@ -125,7 +130,9 @@ contract WithdrawalTest is Test {
         owners[1] = owner2;
         owners[2] = owner3;
 
-        vm.expectRevert(TreasuryWithdrawalGovernance.InvalidApprovalThreshold.selector);
+        vm.expectRevert(
+            TreasuryWithdrawalGovernance.InvalidApprovalThreshold.selector
+        );
 
         new TreasuryWithdrawalGovernance(owners, 0);
     }
@@ -137,7 +144,9 @@ contract WithdrawalTest is Test {
         owners[1] = owner2;
         owners[2] = owner3;
 
-        vm.expectRevert(TreasuryWithdrawalGovernance.InvalidApprovalThreshold.selector);
+        vm.expectRevert(
+            TreasuryWithdrawalGovernance.InvalidApprovalThreshold.selector
+        );
 
         new TreasuryWithdrawalGovernance(owners, 4);
     }
@@ -165,13 +174,18 @@ contract WithdrawalTest is Test {
         new TreasuryWithdrawalGovernance(owners, 2);
     }
 
-    function _createProposal(address proposalRecipient, uint256 amount, uint256 duration)
-        internal
-        returns (uint256 proposalId)
-    {
+    function _createProposal(
+        address proposalRecipient,
+        uint256 amount,
+        uint256 duration
+    ) internal returns (uint256 proposalId) {
         vm.prank(owner1);
 
-        proposalId = treasury.createWithdrawalProposal(proposalRecipient, amount, duration);
+        proposalId = treasury.createWithdrawalProposal(
+            proposalRecipient,
+            amount,
+            duration
+        );
     }
 
     function testCreateWithdrawalProposal() public {
@@ -183,17 +197,26 @@ contract WithdrawalTest is Test {
         vm.expectEmit(true, true, true, true);
 
         emit TreasuryWithdrawalGovernance.WithdrawalProposalCreated(
-            1, owner1, recipient, amount, block.timestamp + duration
+            1,
+            owner1,
+            recipient,
+            amount,
+            block.timestamp + duration
         );
 
         vm.prank(owner1);
 
-        uint256 proposalId = treasury.createWithdrawalProposal(recipient, amount, duration);
+        uint256 proposalId = treasury.createWithdrawalProposal(
+            recipient,
+            amount,
+            duration
+        );
 
         assertEq(proposalId, 1);
         assertEq(treasury.nextProposalId(), 2);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         assertEq(proposal.id, 1);
         assertEq(proposal.recipient, recipient);
@@ -203,7 +226,10 @@ contract WithdrawalTest is Test {
         assertEq(proposal.createdAt, 1_000);
         assertEq(proposal.expiresAt, 1_000 + duration);
 
-        assertEq(uint256(proposal.status), uint256(TreasuryWithdrawalGovernance.ProposalStatus.Pending));
+        assertEq(
+            uint256(proposal.status),
+            uint256(TreasuryWithdrawalGovernance.ProposalStatus.Pending)
+        );
     }
 
     function testNonOwnerCannotCreateProposal() public {
@@ -253,7 +279,8 @@ contract WithdrawalTest is Test {
 
         uint256 proposalId = _createProposal(recipient, 1 ether, duration);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         assertEq(proposal.expiresAt, block.timestamp + duration);
     }
@@ -261,9 +288,15 @@ contract WithdrawalTest is Test {
     function testCreateProposalRejectsInsufficientTreasuryBalance() public {
         vm.prank(owner1);
 
-        vm.expectRevert(TreasuryWithdrawalGovernance.InsufficientTreasuryBalance.selector);
+        vm.expectRevert(
+            TreasuryWithdrawalGovernance.InsufficientTreasuryBalance.selector
+        );
 
-        treasury.createWithdrawalProposal(recipient, INITIAL_BALANCE + 1, 1 days);
+        treasury.createWithdrawalProposal(
+            recipient,
+            INITIAL_BALANCE + 1,
+            1 days
+        );
     }
 
     function testOwnerCanApproveOnce() public {
@@ -271,11 +304,18 @@ contract WithdrawalTest is Test {
 
         vm.expectEmit(true, true, false, true);
 
-        emit TreasuryWithdrawalGovernance.WithdrawalProposalVoted(proposalId, owner1, true, 1, 0);
+        emit TreasuryWithdrawalGovernance.WithdrawalProposalVoted(
+            proposalId,
+            owner1,
+            true,
+            1,
+            0
+        );
 
         _approveProposal(proposalId, owner1);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         assertEq(proposal.approvalCount, 1);
         assertEq(proposal.rejectionCount, 0);
@@ -315,11 +355,18 @@ contract WithdrawalTest is Test {
 
         vm.expectEmit(true, true, false, true);
 
-        emit TreasuryWithdrawalGovernance.WithdrawalProposalVoted(proposalId, owner1, false, 0, 1);
+        emit TreasuryWithdrawalGovernance.WithdrawalProposalVoted(
+            proposalId,
+            owner1,
+            false,
+            0,
+            1
+        );
 
         _rejectProposal(proposalId, owner1);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         assertEq(proposal.approvalCount, 0);
         assertEq(proposal.rejectionCount, 1);
@@ -344,13 +391,19 @@ contract WithdrawalTest is Test {
 
         vm.prank(owner1);
 
-        proposalB = treasury.createWithdrawalProposal(recipient, 2 ether, 1 days);
+        proposalB = treasury.createWithdrawalProposal(
+            recipient,
+            2 ether,
+            1 days
+        );
 
         _approveProposal(proposalA, owner1);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory a = treasury.getProposal(proposalA);
+        TreasuryWithdrawalGovernance.WithdrawalProposal memory a = treasury
+            .getProposal(proposalA);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory b = treasury.getProposal(proposalB);
+        TreasuryWithdrawalGovernance.WithdrawalProposal memory b = treasury
+            .getProposal(proposalB);
 
         assertEq(a.approvalCount, 1);
         assertEq(b.approvalCount, 0);
@@ -365,7 +418,8 @@ contract WithdrawalTest is Test {
         _approveProposal(proposalId, owner1);
         _approveProposal(proposalId, owner2);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         assertEq(proposal.approvalCount, 2);
         assertTrue(treasury.canExecute(proposalId));
@@ -378,13 +432,21 @@ contract WithdrawalTest is Test {
 
         vm.expectEmit(true, true, false, true);
 
-        emit TreasuryWithdrawalGovernance.WithdrawalProposalRejected(proposalId, owner2, 2);
+        emit TreasuryWithdrawalGovernance.WithdrawalProposalRejected(
+            proposalId,
+            owner2,
+            2
+        );
 
         _rejectProposal(proposalId, owner2);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
-        assertEq(uint256(proposal.status), uint256(TreasuryWithdrawalGovernance.ProposalStatus.Rejected));
+        assertEq(
+            uint256(proposal.status),
+            uint256(TreasuryWithdrawalGovernance.ProposalStatus.Rejected)
+        );
     }
 
     function testRejectedProposalCannotExecute() public {
@@ -395,7 +457,9 @@ contract WithdrawalTest is Test {
 
         vm.prank(owner3);
 
-        vm.expectRevert(TreasuryWithdrawalGovernance.ProposalAlreadyRejected.selector);
+        vm.expectRevert(
+            TreasuryWithdrawalGovernance.ProposalAlreadyRejected.selector
+        );
 
         treasury.executeWithdrawalProposal(proposalId);
     }
@@ -412,15 +476,24 @@ contract WithdrawalTest is Test {
 
         vm.expectEmit(true, true, true, true);
 
-        emit TreasuryWithdrawalGovernance.WithdrawalProposalExecuted(proposalId, owner1, recipient, 1 ether);
+        emit TreasuryWithdrawalGovernance.WithdrawalProposalExecuted(
+            proposalId,
+            owner1,
+            recipient,
+            1 ether
+        );
 
         vm.prank(owner1);
 
         treasury.executeWithdrawalProposal(proposalId);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
-        assertEq(uint256(proposal.status), uint256(TreasuryWithdrawalGovernance.ProposalStatus.Executed));
+        assertEq(
+            uint256(proposal.status),
+            uint256(TreasuryWithdrawalGovernance.ProposalStatus.Executed)
+        );
 
         assertEq(address(treasury).balance, treasuryBefore - 1 ether);
 
@@ -438,7 +511,9 @@ contract WithdrawalTest is Test {
 
         vm.prank(owner2);
 
-        vm.expectRevert(TreasuryWithdrawalGovernance.ProposalAlreadyExecuted.selector);
+        vm.expectRevert(
+            TreasuryWithdrawalGovernance.ProposalAlreadyExecuted.selector
+        );
 
         treasury.executeWithdrawalProposal(proposalId);
     }
@@ -446,7 +521,8 @@ contract WithdrawalTest is Test {
     function testProposalCanBeVotedBeforeExpiry() public {
         uint256 proposalId = _createProposal(recipient, 1 ether, 1 days);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         vm.warp(proposal.expiresAt - 1);
 
@@ -460,7 +536,8 @@ contract WithdrawalTest is Test {
     function testVotingAtExpiryReverts() public {
         uint256 proposalId = _createProposal(recipient, 1 ether, 1 days);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         vm.warp(proposal.expiresAt);
 
@@ -477,7 +554,8 @@ contract WithdrawalTest is Test {
         _approveProposal(proposalId, owner1);
         _approveProposal(proposalId, owner2);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         vm.warp(proposal.expiresAt);
 
@@ -491,19 +569,26 @@ contract WithdrawalTest is Test {
     function testExpireProposalPersistsExpiredState() public {
         uint256 proposalId = _createProposal(recipient, 1 ether, 1 days);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         vm.warp(proposal.expiresAt);
 
         vm.expectEmit(true, false, false, true);
 
-        emit TreasuryWithdrawalGovernance.WithdrawalProposalExpired(proposalId, proposal.expiresAt);
+        emit TreasuryWithdrawalGovernance.WithdrawalProposalExpired(
+            proposalId,
+            proposal.expiresAt
+        );
 
         treasury.expireProposal(proposalId);
 
         proposal = treasury.getProposal(proposalId);
 
-        assertEq(uint256(proposal.status), uint256(TreasuryWithdrawalGovernance.ProposalStatus.Expired));
+        assertEq(
+            uint256(proposal.status),
+            uint256(TreasuryWithdrawalGovernance.ProposalStatus.Expired)
+        );
     }
 
     function testExecutionRechecksTreasuryBalance() public {
@@ -513,7 +598,11 @@ contract WithdrawalTest is Test {
 
         vm.prank(owner1);
 
-        proposalB = treasury.createWithdrawalProposal(recipient, 6 ether, 1 days);
+        proposalB = treasury.createWithdrawalProposal(
+            recipient,
+            6 ether,
+            1 days
+        );
 
         _approveProposal(proposalA, owner1);
         _approveProposal(proposalA, owner2);
@@ -529,13 +618,19 @@ contract WithdrawalTest is Test {
 
         vm.prank(owner2);
 
-        vm.expectRevert(TreasuryWithdrawalGovernance.InsufficientTreasuryBalance.selector);
+        vm.expectRevert(
+            TreasuryWithdrawalGovernance.InsufficientTreasuryBalance.selector
+        );
 
         treasury.executeWithdrawalProposal(proposalB);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalB);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalB);
 
-        assertEq(uint256(proposal.status), uint256(TreasuryWithdrawalGovernance.ProposalStatus.Pending));
+        assertEq(
+            uint256(proposal.status),
+            uint256(TreasuryWithdrawalGovernance.ProposalStatus.Pending)
+        );
 
         assertEq(address(treasury).balance, 4 ether);
     }
@@ -549,13 +644,20 @@ contract WithdrawalTest is Test {
         owners[1] = owner2;
         owners[2] = address(attacker);
 
-        TreasuryWithdrawalGovernance guardedTreasury = new TreasuryWithdrawalGovernance(owners, 2);
+        TreasuryWithdrawalGovernance guardedTreasury = new TreasuryWithdrawalGovernance(
+                owners,
+                2
+            );
 
         vm.deal(address(guardedTreasury), 5 ether);
 
         vm.prank(owner1);
 
-        uint256 proposalId = guardedTreasury.createWithdrawalProposal(address(attacker), 1 ether, 1 days);
+        uint256 proposalId = guardedTreasury.createWithdrawalProposal(
+            address(attacker),
+            1 ether,
+            1 days
+        );
 
         vm.prank(owner1);
 
@@ -578,9 +680,13 @@ contract WithdrawalTest is Test {
 
         assertEq(address(guardedTreasury).balance, treasuryBefore - 1 ether);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = guardedTreasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = guardedTreasury.getProposal(proposalId);
 
-        assertEq(uint256(proposal.status), uint256(TreasuryWithdrawalGovernance.ProposalStatus.Executed));
+        assertEq(
+            uint256(proposal.status),
+            uint256(TreasuryWithdrawalGovernance.ProposalStatus.Executed)
+        );
     }
 
     function testNonexistentProposalCannotBeVotedOn() public {
@@ -594,7 +700,11 @@ contract WithdrawalTest is Test {
     function testEthTransferFailureRollsBackExecution() public {
         RejectingRecipient rejectingRecipient = new RejectingRecipient();
 
-        uint256 proposalId = _createProposal(address(rejectingRecipient), 1 ether, 1 days);
+        uint256 proposalId = _createProposal(
+            address(rejectingRecipient),
+            1 ether,
+            1 days
+        );
 
         _approveProposal(proposalId, owner1);
         _approveProposal(proposalId, owner2);
@@ -607,9 +717,13 @@ contract WithdrawalTest is Test {
 
         treasury.executeWithdrawalProposal(proposalId);
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
-        assertEq(uint256(proposal.status), uint256(TreasuryWithdrawalGovernance.ProposalStatus.Pending));
+        assertEq(
+            uint256(proposal.status),
+            uint256(TreasuryWithdrawalGovernance.ProposalStatus.Pending)
+        );
 
         assertEq(address(treasury).balance, treasuryBefore);
 
@@ -620,7 +734,9 @@ contract WithdrawalTest is Test {
         if (amount == 0) {
             vm.prank(owner1);
 
-            vm.expectRevert(TreasuryWithdrawalGovernance.InvalidAmount.selector);
+            vm.expectRevert(
+                TreasuryWithdrawalGovernance.InvalidAmount.selector
+            );
 
             treasury.createWithdrawalProposal(recipient, amount, 1 days);
 
@@ -630,7 +746,11 @@ contract WithdrawalTest is Test {
         if (amount > INITIAL_BALANCE) {
             vm.prank(owner1);
 
-            vm.expectRevert(TreasuryWithdrawalGovernance.InsufficientTreasuryBalance.selector);
+            vm.expectRevert(
+                TreasuryWithdrawalGovernance
+                    .InsufficientTreasuryBalance
+                    .selector
+            );
 
             treasury.createWithdrawalProposal(recipient, amount, 1 days);
 
@@ -639,9 +759,14 @@ contract WithdrawalTest is Test {
 
         vm.prank(owner1);
 
-        uint256 proposalId = treasury.createWithdrawalProposal(recipient, amount, 1 days);
+        uint256 proposalId = treasury.createWithdrawalProposal(
+            recipient,
+            amount,
+            1 days
+        );
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         assertEq(proposal.amount, amount);
     }
@@ -650,7 +775,9 @@ contract WithdrawalTest is Test {
         if (duration == 0) {
             vm.prank(owner1);
 
-            vm.expectRevert(TreasuryWithdrawalGovernance.InvalidExpiry.selector);
+            vm.expectRevert(
+                TreasuryWithdrawalGovernance.InvalidExpiry.selector
+            );
 
             treasury.createWithdrawalProposal(recipient, 1 ether, duration);
 
@@ -660,7 +787,9 @@ contract WithdrawalTest is Test {
         if (duration > treasury.MAX_PROPOSAL_DURATION()) {
             vm.prank(owner1);
 
-            vm.expectRevert(TreasuryWithdrawalGovernance.ExpiryTooLong.selector);
+            vm.expectRevert(
+                TreasuryWithdrawalGovernance.ExpiryTooLong.selector
+            );
 
             treasury.createWithdrawalProposal(recipient, 1 ether, duration);
 
@@ -671,9 +800,14 @@ contract WithdrawalTest is Test {
 
         vm.prank(owner1);
 
-        uint256 proposalId = treasury.createWithdrawalProposal(recipient, 1 ether, duration);
+        uint256 proposalId = treasury.createWithdrawalProposal(
+            recipient,
+            1 ether,
+            duration
+        );
 
-        TreasuryWithdrawalGovernance.WithdrawalProposal memory proposal = treasury.getProposal(proposalId);
+        TreasuryWithdrawalGovernance.WithdrawalProposal
+            memory proposal = treasury.getProposal(proposalId);
 
         assertEq(proposal.createdAt, createdAt);
         assertEq(proposal.expiresAt, createdAt + duration);
