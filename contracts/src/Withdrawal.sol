@@ -44,16 +44,30 @@ contract TreasuryWithdrawalGovernance is ReentrancyGuard {
     // support = true  -> approval
     // support = false -> rejection
     event WithdrawalProposalVoted(
-        uint256 indexed proposalId, address indexed owner, bool support, uint256 approvalCount, uint256 rejectionCount
+        uint256 indexed proposalId,
+        address indexed owner,
+        bool support,
+        uint256 approvalCount,
+        uint256 rejectionCount
     );
 
     event WithdrawalProposalExecuted(
-        uint256 indexed proposalId, address indexed executor, address indexed recipient, uint256 amount
+        uint256 indexed proposalId,
+        address indexed executor,
+        address indexed recipient,
+        uint256 amount
     );
 
-    event WithdrawalProposalRejected(uint256 indexed proposalId, address indexed rejector, uint256 rejectionCount);
+    event WithdrawalProposalRejected(
+        uint256 indexed proposalId,
+        address indexed rejector,
+        uint256 rejectionCount
+    );
 
-    event WithdrawalProposalExpired(uint256 indexed proposalId, uint256 expiredAt);
+    event WithdrawalProposalExpired(
+        uint256 indexed proposalId,
+        uint256 expiredAt
+    );
 
     /*//////////////////////////////////////////////////////////////
                                 TYPES
@@ -154,11 +168,11 @@ contract TreasuryWithdrawalGovernance is ReentrancyGuard {
                        CREATE WITHDRAWAL PROPOSAL
     //////////////////////////////////////////////////////////////*/
 
-    function createWithdrawalProposal(address recipient, uint256 amount, uint256 duration)
-        external
-        onlyOwner
-        returns (uint256 proposalId)
-    {
+    function createWithdrawalProposal(
+        address recipient,
+        uint256 amount,
+        uint256 duration
+    ) external onlyOwner returns (uint256 proposalId) {
         if (recipient == address(0)) {
             revert InvalidRecipient();
         }
@@ -194,14 +208,23 @@ contract TreasuryWithdrawalGovernance is ReentrancyGuard {
             status: ProposalStatus.Pending
         });
 
-        emit WithdrawalProposalCreated(proposalId, msg.sender, recipient, amount, expiresAt);
+        emit WithdrawalProposalCreated(
+            proposalId,
+            msg.sender,
+            recipient,
+            amount,
+            expiresAt
+        );
     }
 
     /*//////////////////////////////////////////////////////////////
                               VOTING
     //////////////////////////////////////////////////////////////*/
 
-    function voteOnWithdrawalProposal(uint256 proposalId, bool support) external onlyOwner {
+    function voteOnWithdrawalProposal(
+        uint256 proposalId,
+        bool support
+    ) external onlyOwner {
         WithdrawalProposal storage proposal = proposals[proposalId];
 
         if (proposalId == 0 || proposal.id != proposalId) {
@@ -236,13 +259,23 @@ contract TreasuryWithdrawalGovernance is ReentrancyGuard {
             proposal.rejectionCount++;
         }
 
-        emit WithdrawalProposalVoted(proposalId, msg.sender, support, proposal.approvalCount, proposal.rejectionCount);
+        emit WithdrawalProposalVoted(
+            proposalId,
+            msg.sender,
+            support,
+            proposal.approvalCount,
+            proposal.rejectionCount
+        );
 
         // A rejection threshold terminates the proposal.
         if (proposal.rejectionCount >= requiredRejections) {
             proposal.status = ProposalStatus.Rejected;
 
-            emit WithdrawalProposalRejected(proposalId, msg.sender, proposal.rejectionCount);
+            emit WithdrawalProposalRejected(
+                proposalId,
+                msg.sender,
+                proposal.rejectionCount
+            );
         }
     }
 
@@ -250,7 +283,9 @@ contract TreasuryWithdrawalGovernance is ReentrancyGuard {
                               EXECUTION
     //////////////////////////////////////////////////////////////*/
 
-    function executeWithdrawalProposal(uint256 proposalId) external onlyOwner {
+    function executeWithdrawalProposal(
+        uint256 proposalId
+    ) external onlyOwner nonReentrant {
         WithdrawalProposal storage proposal = proposals[proposalId];
 
         if (proposalId == 0 || proposal.id != proposalId) {
@@ -287,13 +322,18 @@ contract TreasuryWithdrawalGovernance is ReentrancyGuard {
         // recipient cannot re-enter and execute the same proposal.
         proposal.status = ProposalStatus.Executed;
 
-        (bool success,) = proposal.recipient.call{value: proposal.amount}("");
+        (bool success, ) = proposal.recipient.call{value: proposal.amount}("");
 
         if (!success) {
             revert TransferFailed();
         }
 
-        emit WithdrawalProposalExecuted(proposalId, msg.sender, proposal.recipient, proposal.amount);
+        emit WithdrawalProposalExecuted(
+            proposalId,
+            msg.sender,
+            proposal.recipient,
+            proposal.amount
+        );
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -326,7 +366,9 @@ contract TreasuryWithdrawalGovernance is ReentrancyGuard {
         return owners;
     }
 
-    function getProposal(uint256 proposalId) external view returns (WithdrawalProposal memory) {
+    function getProposal(
+        uint256 proposalId
+    ) external view returns (WithdrawalProposal memory) {
         WithdrawalProposal storage proposal = proposals[proposalId];
 
         if (proposalId == 0 || proposal.id != proposalId) {
@@ -358,7 +400,10 @@ contract TreasuryWithdrawalGovernance is ReentrancyGuard {
         return address(this).balance >= proposal.amount;
     }
 
-    function hasOwnerVoted(uint256 proposalId, address owner) external view returns (bool voted, bool approved) {
+    function hasOwnerVoted(
+        uint256 proposalId,
+        address owner
+    ) external view returns (bool voted, bool approved) {
         voted = hasVoted[proposalId][owner];
         approved = approvedVote[proposalId][owner];
     }
