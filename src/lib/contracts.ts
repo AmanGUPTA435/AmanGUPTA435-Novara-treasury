@@ -6,6 +6,7 @@ export type LocalDeployment = {
   testToken: Address;
   mockUsdc: Address;
   treasurySwap: Address;
+  treasuryWithdrawal: Address;
 };
 
 export const deployment = local as LocalDeployment;
@@ -17,6 +18,7 @@ export function contractsReady() {
   return (
     deployment.testToken !== ZERO_ADDRESS &&
     deployment.mockUsdc !== ZERO_ADDRESS &&
-    deployment.treasurySwap !== ZERO_ADDRESS
+    deployment.treasurySwap !== ZERO_ADDRESS &&
+    deployment.treasuryWithdrawal !== ZERO_ADDRESS
   );
 }

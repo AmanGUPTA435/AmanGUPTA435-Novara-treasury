@@ -115,4 +115,22 @@ contract TreasurySwapTest is Test {
 
         assertEq(usdc.balanceOf(owner), beforeBal + amount);
     }
+
+    function test_non_owner_cannot_emergency_withdraw() public {
+        uint256 amount = 1_000 * 1e6;
+
+        uint256 treasuryBefore = usdc.balanceOf(address(treasury));
+
+        uint256 otherBefore = usdc.balanceOf(other);
+
+        vm.prank(other);
+
+        vm.expectRevert();
+
+        treasury.emergencyWithdraw(address(usdc), amount, other);
+
+        assertEq(usdc.balanceOf(address(treasury)), treasuryBefore);
+
+        assertEq(usdc.balanceOf(other), otherBefore);
+    }
 }

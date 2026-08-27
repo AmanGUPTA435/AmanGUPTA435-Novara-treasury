@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-address constant VM_ADDRESS = address(uint160(uint256(keccak256("hevm cheat code"))));
+address constant VM_ADDRESS = address(
+    uint160(uint256(keccak256("hevm cheat code")))
+);
 
 interface Vm {
     struct Log {
@@ -11,19 +13,42 @@ interface Vm {
     }
 
     function startBroadcast() external;
+
     function startBroadcast(uint256 privateKey) external;
+
     function stopBroadcast() external;
+
     function writeFile(string calldata path, string calldata data) external;
+
+    function warp(uint256 newTimestamp) external;
+
     function toString(address value) external pure returns (string memory);
+
     function toString(uint256 value) external pure returns (string memory);
+
     function prank(address msgSender) external;
+
     function startPrank(address msgSender) external;
+
     function stopPrank() external;
+
     function expectRevert() external;
+
+    function expectRevert(bytes4 revertData) external;
+
     function expectRevert(bytes calldata revertData) external;
-    function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData) external;
+
+    function expectEmit(
+        bool checkTopic1,
+        bool checkTopic2,
+        bool checkTopic3,
+        bool checkData
+    ) external;
+
     function deal(address account, uint256 newBalance) external;
+
     function recordLogs() external;
+
     function getRecordedLogs() external returns (Log[] memory);
 }
 
@@ -47,7 +72,10 @@ abstract contract Test {
     }
 
     function assertEq(string memory a, string memory b) internal pure {
-        require(keccak256(bytes(a)) == keccak256(bytes(b)), "assertEq(string) failed");
+        require(
+            keccak256(bytes(a)) == keccak256(bytes(b)),
+            "assertEq(string) failed"
+        );
     }
 
     function assertEq(uint8 a, uint8 b) internal pure {

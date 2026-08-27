@@ -41,7 +41,7 @@ contract TreasurySwap is Ownable, ReentrancyGuard {
         emit SwapExecuted(msg.sender, testAmount, usdcAmount);
     }
 
-    function emergencyWithdraw(address token, uint256 amount, address to) external {
+    function emergencyWithdraw(address token, uint256 amount, address to) external onlyOwner {
         require(token != address(0), "TreasurySwap: token");
         require(to != address(0), "TreasurySwap: recipient");
         require(amount > 0, "TreasurySwap: amount");
